@@ -1,5 +1,34 @@
 import { createLru } from '../lib/utils.js'
 
+const participantId = participant => (typeof participant === 'string' ? participant : participant?.id)
+
+const applyParticipantsUpdate = (data, action, participants) => {
+  const current = Array.isArray(data.participants) ? data.participants : []
+  const ids = new Set(participants.map(participantId).filter(Boolean))
+
+  if (action === 'add') {
+    const existing = new Set(current.map(p => p.id))
+    const added = participants
+      .filter(p => participantId(p) && !existing.has(participantId(p)))
+      .map(p => (typeof p === 'string' ? { id: p } : p))
+    return added.length ? { ...data, participants: [...current, ...added] } : data
+  }
+
+  if (action === 'remove') {
+    return { ...data, participants: current.filter(p => !ids.has(p.id)) }
+  }
+
+  if (action === 'promote') {
+    return { ...data, participants: current.map(p => (ids.has(p.id) ? { ...p, admin: 'admin' } : p)) }
+  }
+
+  if (action === 'demote') {
+    return { ...data, participants: current.map(p => (ids.has(p.id) ? { ...p, admin: null } : p)) }
+  }
+
+  return data
+}
+
 export const createGroupCache = ({ ttlMs = 60_000, limit = 200 } = {}) => {
   const store = createLru(limit)
   const inflight = new Map()
@@ -16,6 +45,16 @@ export const createGroupCache = ({ ttlMs = 60_000, limit = 200 } = {}) => {
 
   const invalidate = jid => {
     store.delete(jid)
+    inflight.delete(jid)
+  }
+
+  const patch = (jid, update) => {
+    const entry = store.get(jid)
+    if (!entry || entry.expires <= Date.now()) {
+      invalidate(jid)
+      return
+    }
+    store.set(jid, { data: update(entry.data), expires: entry.expires })
   }
 
   const get = async jid => {
@@ -30,10 +69,12 @@ export const createGroupCache = ({ ttlMs = 60_000, limit = 200 } = {}) => {
     const request = sock
       .groupMetadata(jid)
       .then(data => {
-        set(jid, data)
+        if (inflight.get(jid) === request) set(jid, data)
         return data
       })
-      .finally(() => inflight.delete(jid))
+      .finally(() => {
+        if (inflight.get(jid) === request) inflight.delete(jid)
+      })
 
     inflight.set(jid, request)
     return request
@@ -50,12 +91,13 @@ export const createGroupCache = ({ ttlMs = 60_000, limit = 200 } = {}) => {
 
     nextSock.ev.on('groups.update', updates => {
       for (const update of updates) {
-        if (update?.id) invalidate(update.id)
+        if (update?.id) patch(update.id, data => ({ ...data, ...update }))
       }
     })
 
     nextSock.ev.on('group-participants.update', update => {
-      if (update?.id) invalidate(update.id)
+      if (!update?.id) return
+      patch(update.id, data => applyParticipantsUpdate(data, update.action, update.participants ?? []))
     })
   }
 
