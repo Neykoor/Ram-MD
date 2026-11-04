@@ -2,7 +2,6 @@
 
 <img src="./assets/banner.png" alt="Ram Bot" width="100%" />
 
-# 👑 Ram
 
 
 Base profesional para bots de **WhatsApp** pensada para **Termux**.<br>
