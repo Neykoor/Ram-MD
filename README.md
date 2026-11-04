@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/banner.svg" alt="Ram Bot" width="100%" />
+<img src="./assets/banner.png" alt="Ram Bot" width="100%" />
 
 # 👑 Ram
 
