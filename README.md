@@ -75,14 +75,6 @@ git clone https://github.com/TU-USUARIO/Ram-Bot.git
 cd Ram-Bot
 ```
 
-O desde el `.zip`:
-
-```bash
-pkg install -y unzip
-unzip Ram-Bot.zip
-cd Ram-Bot
-```
-
 **3. Instala las dependencias**
 
 ```bash
