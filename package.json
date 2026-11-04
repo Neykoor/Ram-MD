@@ -1,0 +1,26 @@
+{
+  "name": "ram-bot",
+  "version": "1.0.0",
+  "description": "Ram, la bot de WhatsApp que viene a coronar. Base profesional y personalizable para Termux.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "check": "node scripts/check.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "baileys": "npm:@neykoor/baileys@8.0.2-rc18",
+    "pino": "^9.6.0"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "termux",
+    "baileys",
+    "baileysx"
+  ],
+  "license": "MIT"
+}
