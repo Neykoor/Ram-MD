@@ -4,7 +4,6 @@
 
 # 👑 Ram
 
-### *La bot que viene a coronar*
 
 Base profesional para bots de **WhatsApp** pensada para **Termux**.<br>
 Fácil de personalizar, organizada por plugins y lista para crecer.
